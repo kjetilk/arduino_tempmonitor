@@ -31,7 +31,7 @@ OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
 // arrays to hold device addresses
-DeviceAddress insideThermometer, outsideThermometer;
+DeviceAddress Thermometers[2];
 
 
 // function to print a device address
@@ -90,7 +90,8 @@ void setup(void)
   // locate devices on the bus
   Serial.print("Locating devices...");
   Serial.print("Found ");
-  Serial.print(sensors.getDeviceCount(), DEC);
+  uint8_t countThermo = sensors.getDeviceCount();
+  Serial.print(countThermo, DEC);
   Serial.println(" devices.");
 
   // report parasite power requirements
@@ -111,8 +112,13 @@ void setup(void)
   // the devices on your bus (and assuming they don't change).
   // 
   // method 1: by index
-  if (!sensors.getAddress(insideThermometer, 0)) Serial.println("Unable to find address for Device 0"); 
-  if (!sensors.getAddress(outsideThermometer, 1)) Serial.println("Unable to find address for Device 1"); 
+  for (uint8_t i = 0; i < countThermo; i++) {
+    if (!sensors.getAddress(Thermometers[i], i)) {
+      Serial.print("Unable to find address for Device "); 
+      Serial.println(i);
+    }
+  }
+
 
   // method 2: search()
   // search() looks for the next device. Returns 1 if a new address has been
@@ -129,24 +135,20 @@ void setup(void)
   //if (!oneWire.search(outsideThermometer)) Serial.println("Unable to find address for outsideThermometer");
 
   // show the addresses we found on the bus
-  Serial.print("Device 0 Address: ");
-  printAddress(insideThermometer);
-  Serial.println();
+  for (uint8_t i = 0; i < countThermo; i++) {
+    Serial.print("Address for device ");
+    Serial.print(i);
+    Serial.print(": ");
+    printAddress(Thermometers[i]);
+    Serial.println();
+    sensors.setResolution(Thermometers[i], TEMPERATURE_PRECISION);
 
-  Serial.print("Device 1 Address: ");
-  printAddress(outsideThermometer);
-  Serial.println();
-
-  // set the resolution to 9 bit per device
-  sensors.setResolution(insideThermometer, TEMPERATURE_PRECISION);
-  sensors.setResolution(outsideThermometer, TEMPERATURE_PRECISION);
-
-  Serial.print("Device 0 Resolution: ");
-  Serial.print(sensors.getResolution(insideThermometer), DEC); 
-  Serial.println();
-
-  Serial.print("Device 1 Resolution: ");
-  Serial.print(sensors.getResolution(outsideThermometer), DEC); 
+    Serial.print("Device ");
+    Serial.print(i);
+    Serial.print(" Resolution: ");
+    Serial.print(sensors.getResolution(Thermometers[i]), DEC); 
+    Serial.println();
+  }
   Serial.println();
 }
 
@@ -161,13 +163,19 @@ void loop(void)
 
   // call sensors.requestTemperatures() to issue a global temperature 
   // request to all devices on the bus
-  Serial.print("Requesting temperatures...");
-  sensors.requestTemperatures();
-  Serial.println("DONE");
+    uint8_t countThermo = sensors.getDeviceCount();
 
-  // print the device information
-  printData(insideThermometer);
-  printData(outsideThermometer);
+    Serial.print("Requesting temperatures from ");
+    Serial.print(countThermo);
+    Serial.print(" devices...");
+    sensors.requestTemperatures();
+    Serial.println("DONE");
+    
+    for (uint8_t i = 0; i < countThermo; i++) {
+      printData(Thermometers[i]);
+    }
+
+    // print the device information
     Serial.println("Got a client");
     // an http request ends with a blank line
     boolean currentLineIsBlank = true;
@@ -182,25 +190,27 @@ void loop(void)
           client.println("HTTP/1.1 200 OK");
           client.println("Content-Type: text/plain");
           client.println();
-          // print the current readings, in HTML format:
-          client.print("Temperature: ");
-          client.print(sensors.getTempC(insideThermometer));
-          client.println(" degrees C");
+          
+          for (uint8_t i = 0; i < countThermo; i++) {
+            client.print("Temperature: ");
+            client.print(sensors.getTempC(Thermometers[i]));
+            client.println(" degrees C");
+          }
           break;
-        }
-        if (c == '\n') {
-          // you're starting a new line
-          currentLineIsBlank = true;
-        } else if (c != '\r') {
-          // you've gotten a character on the current line
-          currentLineIsBlank = false;
+          
+          if (c == '\n') {
+            // you're starting a new line
+            currentLineIsBlank = true;
+          } else if (c != '\r') {
+            // you've gotten a character on the current line
+            currentLineIsBlank = false;
+          }
         }
       }
+      // give the web browser time to receive the data
+      delay(1);
+      // close the connection:
+      client.stop();
     }
-    // give the web browser time to receive the data
-    delay(1);
-    // close the connection:
-    client.stop();
   }
 }
-
