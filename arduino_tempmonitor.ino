@@ -175,14 +175,26 @@ void loop(void)
         if (c == '\n' && currentLineIsBlank) {
           // send a standard http response header
           client.println(F("HTTP/1.1 200 OK"));
-          client.println(F("Content-Type: text/plain"));
+          client.println(F("Content-Type: application/json"));
           client.println();
           
+          client.println("{");
           for (uint8_t i = 0; i < countThermo; i++) {
-            client.print("Temperature: ");
+            client.print("\"");
+            for (uint8_t j = 0; j < 8; j++) {
+              // zero pad the address if necessary
+              if (Thermometers[i][j] < 16) client.print("0");
+              client.print(Thermometers[i][j], HEX);
+            }
+            client.print("\":");
             client.print(sensors.getTempC(Thermometers[i]));
-            client.println(" degrees C");
+            if (i < countThermo-1) {
+              client.println(",");
+            } else {
+              client.println();
+            }
           }
+          client.println("}");
           break;
         }
         if (c == '\n') {
