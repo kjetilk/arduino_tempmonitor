@@ -197,20 +197,19 @@ void loop(void)
             client.println(" degrees C");
           }
           break;
-          
-          if (c == '\n') {
-            // you're starting a new line
-            currentLineIsBlank = true;
-          } else if (c != '\r') {
-            // you've gotten a character on the current line
-            currentLineIsBlank = false;
-          }
+        }
+        if (c == '\n') {
+          // you're starting a new line
+          currentLineIsBlank = true;
+        } else if (c != '\r') {
+          // you've gotten a character on the current line
+          currentLineIsBlank = false;
         }
       }
-      // give the web browser time to receive the data
-      delay(1);
-      // close the connection:
-      client.stop();
     }
+    // give the web browser time to receive the data
+    delay(1);
+    // close the connection:
+    client.stop();
   }
 }
