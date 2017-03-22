@@ -62,14 +62,14 @@ void printAddress(DeviceAddress deviceAddress)
 void printTemperature(DeviceAddress deviceAddress)
 {
   float tempC = sensors.getTempC(deviceAddress);
-  Serial.print("Temp C: ");
+  Serial.print(F("Temp C: "));
   Serial.print(tempC);
 }
 
 // function to print a device's resolution
 void printResolution(DeviceAddress deviceAddress)
 {
-  Serial.print("Resolution: ");
+  Serial.print(F("Resolution: "));
   Serial.print(sensors.getResolution(deviceAddress));
   Serial.println();    
 }
@@ -77,7 +77,7 @@ void printResolution(DeviceAddress deviceAddress)
 // main function to print information about a device
 void printData(DeviceAddress deviceAddress)
 {
-  Serial.print("Device Address: ");
+  Serial.print(F("Device Address: "));
   printAddress(deviceAddress);
   Serial.print(" ");
   printTemperature(deviceAddress);
@@ -88,7 +88,7 @@ void setup(void)
 {
   // start serial port
   Serial.begin(9600);
-  Serial.println("Dallas Temperature IC Web Server");
+  Serial.println(F("Dallas Temperature IC Web Server"));
 
   delay(1000);
 
@@ -99,43 +99,43 @@ void setup(void)
 
 
   // locate devices on the bus
-  Serial.print("Locating devices...");
-  Serial.print("Found ");
+  Serial.print(F("Locating devices..."));
+  Serial.print(F("Found "));
   uint8_t countThermo = sensors.getDeviceCount();
   Serial.print(countThermo, DEC);
-  Serial.println(" devices.");
+  Serial.println(F(" devices."));
   if (countThermo != NUMBER_OF_SENSORS) {
-    Serial.print("But you declared ");
+    Serial.print(F("But you declared "));
     Serial.print(NUMBER_OF_SENSORS);
-    Serial.println(" devices with NUMBER_OF_SENSORS");
+    Serial.println(F(" devices with NUMBER_OF_SENSORS"));
   }
 
 
   // report parasite power requirements
-  Serial.print("Parasite power is: "); 
+  Serial.print(F("Parasite power is: ")); 
   if (sensors.isParasitePowerMode()) Serial.println("ON");
   else Serial.println("OFF");
 
   // Search for devices on the bus and assign based on an index. 
   for (uint8_t i = 0; i < countThermo; i++) {
     if (!sensors.getAddress(Thermometers[i], i)) {
-      Serial.print("Unable to find address for Device "); 
+      Serial.print(F("Unable to find address for Device ")); 
       Serial.println(i);
     }
   }
 
   // show the addresses we found on the bus
   for (uint8_t i = 0; i < countThermo; i++) {
-    Serial.print("Address for device ");
+    Serial.print(F("Address for device "));
     Serial.print(i);
     Serial.print(": ");
     printAddress(Thermometers[i]);
     Serial.println();
     sensors.setResolution(Thermometers[i], TEMPERATURE_PRECISION);
 
-    Serial.print("Device ");
+    Serial.print(F("Device "));
     Serial.print(i);
-    Serial.print(" Resolution: ");
+    Serial.print(F(" Resolution: "));
     Serial.print(sensors.getResolution(Thermometers[i]), DEC); 
     Serial.println();
   }
@@ -152,9 +152,9 @@ void loop(void)
   if (client) {
     uint8_t countThermo = sensors.getDeviceCount();
 
-    Serial.print("Requesting temperatures from ");
+    Serial.print(F("Requesting temperatures from "));
     Serial.print(countThermo);
-    Serial.print(" devices...");
+    Serial.print(F(" devices..."));
     sensors.requestTemperatures();
     Serial.println("DONE");
     
@@ -163,7 +163,7 @@ void loop(void)
     }
 
     // print the device information
-    Serial.println("Got a client");
+    Serial.println(F("Got a client"));
     // an http request ends with a blank line
     boolean currentLineIsBlank = true;
     while (client.connected()) {
@@ -174,8 +174,8 @@ void loop(void)
         // so you can send a reply
         if (c == '\n' && currentLineIsBlank) {
           // send a standard http response header
-          client.println("HTTP/1.1 200 OK");
-          client.println("Content-Type: text/plain");
+          client.println(F("HTTP/1.1 200 OK"));
+          client.println(F("Content-Type: text/plain"));
           client.println();
           
           for (uint8_t i = 0; i < countThermo; i++) {
