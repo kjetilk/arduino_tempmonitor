@@ -14,6 +14,9 @@
 
 // Data wire is plugged into port 2 on the Arduino
 #define ONE_WIRE_BUS 2
+// How many sensors are there on the bus?
+#define NUMBER_OF_SENSORS 2
+// What precision do we want?
 #define TEMPERATURE_PRECISION 9
 
 
@@ -39,7 +42,7 @@ OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
 // arrays to hold device addresses
-DeviceAddress Thermometers[2];
+DeviceAddress Thermometers[NUMBER_OF_SENSORS];
 
 
 // function to print a device address
@@ -101,6 +104,12 @@ void setup(void)
   uint8_t countThermo = sensors.getDeviceCount();
   Serial.print(countThermo, DEC);
   Serial.println(" devices.");
+  if (countThermo != NUMBER_OF_SENSORS) {
+    Serial.print("But you declared ");
+    Serial.print(NUMBER_OF_SENSORS);
+    Serial.println(" devices with NUMBER_OF_SENSORS");
+  }
+
 
   // report parasite power requirements
   Serial.print("Parasite power is: "); 
