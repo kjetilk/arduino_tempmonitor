@@ -1,4 +1,13 @@
-// Include the libraries we need
+/*
+  This is the code I use for temperature monitoring in my house.
+
+  I assert no copyright beyond CC0, and besides, there's so much
+  cutnpaste in this that it might not be considered a work in its own
+  right.
+
+  Kjetil Kjernsmo <kjetil@kjernsmo.net>
+*/
+
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <Ethernet.h>
@@ -11,7 +20,6 @@
 
 
 // assign a MAC address for the Ethernet controller.
-// fill in your address here:
 byte mac[] = {
   0xDE, 0xAD, 0xBE, 0xEF, 0x01, 0x01
 };
@@ -77,10 +85,10 @@ void setup(void)
 {
   // start serial port
   Serial.begin(9600);
-  Serial.println("Dallas Temperature IC Control Library Demo");
+  Serial.println("Dallas Temperature IC Web Server");
 
   delay(1000);
-  // Start up the library
+
   sensors.begin();
 
   Ethernet.begin(mac, ip);
@@ -99,40 +107,13 @@ void setup(void)
   if (sensors.isParasitePowerMode()) Serial.println("ON");
   else Serial.println("OFF");
 
-  // Assign address manually. The addresses below will beed to be changed
-  // to valid device addresses on your bus. Device address can be retrieved
-  // by using either oneWire.search(deviceAddress) or individually via
-  // sensors.getAddress(deviceAddress, index)
-  //insideThermometer = { 0x28, 0x1D, 0x39, 0x31, 0x2, 0x0, 0x0, 0xF0 };
-  //outsideThermometer   = { 0x28, 0x3F, 0x1C, 0x31, 0x2, 0x0, 0x0, 0x2 };
-
-  // Search for devices on the bus and assign based on an index. Ideally,
-  // you would do this to initially discover addresses on the bus and then 
-  // use those addresses and manually assign them (see above) once you know 
-  // the devices on your bus (and assuming they don't change).
-  // 
-  // method 1: by index
+  // Search for devices on the bus and assign based on an index. 
   for (uint8_t i = 0; i < countThermo; i++) {
     if (!sensors.getAddress(Thermometers[i], i)) {
       Serial.print("Unable to find address for Device "); 
       Serial.println(i);
     }
   }
-
-
-  // method 2: search()
-  // search() looks for the next device. Returns 1 if a new address has been
-  // returned. A zero might mean that the bus is shorted, there are no devices, 
-  // or you have already retrieved all of them. It might be a good idea to 
-  // check the CRC to make sure you didn't get garbage. The order is 
-  // deterministic. You will always get the same devices in the same order
-  //
-  // Must be called before search()
-  //oneWire.reset_search();
-  // assigns the first address found to insideThermometer
-  //if (!oneWire.search(insideThermometer)) Serial.println("Unable to find address for insideThermometer");
-  // assigns the seconds address found to outsideThermometer
-  //if (!oneWire.search(outsideThermometer)) Serial.println("Unable to find address for outsideThermometer");
 
   // show the addresses we found on the bus
   for (uint8_t i = 0; i < countThermo; i++) {
@@ -160,9 +141,6 @@ void loop(void)
 { 
   EthernetClient client = server.available();
   if (client) {
-
-  // call sensors.requestTemperatures() to issue a global temperature 
-  // request to all devices on the bus
     uint8_t countThermo = sensors.getDeviceCount();
 
     Serial.print("Requesting temperatures from ");
