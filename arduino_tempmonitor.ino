@@ -17,7 +17,7 @@
 // How many sensors are there on the bus?
 #define NUMBER_OF_SENSORS 2
 // What precision do we want?
-#define TEMPERATURE_PRECISION 9
+#define TEMPERATURE_PRECISION 12
 
 
 
