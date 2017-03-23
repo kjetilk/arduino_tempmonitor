@@ -173,28 +173,35 @@ void loop(void)
         // character) and the line is blank, the http request has ended,
         // so you can send a reply
         if (c == '\n' && currentLineIsBlank) {
-          // send a standard http response header
-          client.println(F("HTTP/1.1 200 OK"));
-          client.println(F("Content-Type: application/json"));
-          client.println();
-          
-          client.println("{");
-          for (uint8_t i = 0; i < countThermo; i++) {
-            client.print("\"");
-            for (uint8_t j = 0; j < 8; j++) {
-              // zero pad the address if necessary
-              if (Thermometers[i][j] < 16) client.print("0");
-              client.print(Thermometers[i][j], HEX);
+          if (countThermo < 1) {
+            client.println(F("HTTP/1.1 500 Internal Server Error"));
+            client.println(F("Content-Type: text/plain"));
+            client.println();
+            client.println(F("Found no sensors attached."));
+          } else {
+            // send a standard http response header
+            client.println(F("HTTP/1.1 200 OK"));
+            client.println(F("Content-Type: application/json"));
+            client.println();
+            
+            client.println("{");
+            for (uint8_t i = 0; i < countThermo; i++) {
+              client.print("\"");
+              for (uint8_t j = 0; j < 8; j++) {
+                // zero pad the address if necessary
+                if (Thermometers[i][j] < 16) client.print("0");
+                client.print(Thermometers[i][j], HEX);
+              }
+              client.print("\":");
+              client.print(sensors.getTempC(Thermometers[i]));
+              if (i < countThermo-1) {
+                client.println(",");
+              } else {
+                client.println();
+              }
             }
-            client.print("\":");
-            client.print(sensors.getTempC(Thermometers[i]));
-            if (i < countThermo-1) {
-              client.println(",");
-            } else {
-              client.println();
-            }
+            client.println("}");
           }
-          client.println("}");
           break;
         }
         if (c == '\n') {
