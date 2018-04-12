@@ -15,7 +15,7 @@
 // Data wire is plugged into port 2 on the Arduino
 #define ONE_WIRE_BUS 2
 // How many sensors are there on the bus?
-#define NUMBER_OF_SENSORS 2
+#define NUMBER_OF_SENSORS 5
 // What precision do we want?
 #define TEMPERATURE_PRECISION 12
 
